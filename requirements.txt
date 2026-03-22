@@ -1,0 +1,8 @@
+opencv-python
+Pillow
+matplotlib
+numpy
+pandas
+pyzbar
+streamlit
+mistralai
