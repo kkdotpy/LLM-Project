@@ -6,7 +6,6 @@ This dataset comes from the **USDA FSIS FoodKeeper** application, which provides
 
 **Total Original Records:** 868 rows across 4 sheets
 
----
 
 ## Part 1: Original Source Data (4 Sheets)
 
@@ -21,7 +20,7 @@ A lookup table for food categories.
 
 **Purpose:** Groups products into categories like Meat, Dairy, Baked Goods, etc.
 
----
+
 
 ### Sheet 2: Products (661 rows)
 Main product information with storage times.
@@ -42,7 +41,7 @@ Main product information with storage times.
 
 **Purpose:** Answers "How long does X last?" and "Where should I store X?"
 
----
+
 
 ### Sheet 3: Safety (93 rows)
 Safe cooking temperatures and handling instructions.
@@ -79,7 +78,7 @@ Specific cooking methods, temperatures, and timing instructions.
 
 **Purpose:** Answers "How do I cook X?" with specific method, temperature, and timing.
 
----
+
 
 ## Part 2: Data Relationships
 
@@ -101,13 +100,13 @@ Products (Category_ID) ─────┐
 - One Product → Zero or One Safety record
 - One Product → Zero or More Cooking records (different cuts/methods)
 
----
+
 
 ## Part 3: Processed RAG Collections (3 JSONL Files)
 
 The original 4 sheets were joined and processed into 3 JSONL collections. Variety information (e.g., "Rib Roast" for Beef) was extracted from the Keywords field.
 
----
+
 
 ### Collection 1: Storage (rag_storage.jsonl)
 
@@ -145,7 +144,7 @@ The original 4 sheets were joined and processed into 3 JSONL collections. Variet
 - "Can I leave cheese at room temperature?"
 - "How long does ground beef last after opening?"
 
----
+
 
 ### Collection 2: Safety (rag_safety.jsonl)
 
@@ -179,7 +178,6 @@ The original 4 sheets were joined and processed into 3 JSONL collections. Variet
 - "Is pork done at 145°F?"
 - "How long should beef rest after cooking?"
 
----
 
 ### Collection 3: Cooking (rag_cooking.jsonl)
 
@@ -213,7 +211,7 @@ The original 4 sheets were joined and processed into 3 JSONL collections. Variet
 - "What temperature for roasting lamb?"
 - "How to braise short ribs?"
 
----
+
 
 ## Part 4: Summary
 
