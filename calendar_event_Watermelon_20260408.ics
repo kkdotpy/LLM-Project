@@ -1,0 +1,10 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:ics.py - http://git.io/lLljaA
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260411
+DESCRIPTION:2 units of Watermelon will expire.\nCheck your fridge inventory!
+SUMMARY:Watermelon expires today!
+UID:1569b01e-ea5d-4d40-8ecf-51e6a0308da3@1569.org
+END:VEVENT
+END:VCALENDAR

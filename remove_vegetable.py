@@ -42,7 +42,7 @@ def remove_vegetable_page():
             img_resized = img.resize((200, 200))
 
             # Display the resized image
-            st.image(img_resized, use_column_width=True)
+            st.image(img_resized, use_container_width=True)
             st.session_state.quantities[i] = st.number_input(
                 label='Quantity', 
                 key=f'quantity_{i}', 

@@ -3,78 +3,107 @@ from PIL import Image
 import pickle
 import pandas as pd
 from datetime import datetime, timedelta
+import time
 
 
 def fruit_page():
-    # Set the title of the app
     st.title("Fruits")
 
-    # Define the images for the columns
     images = [
-    'fruit_image/apple.jpeg',
-    'fruit_image/grape.jpeg',
-    'fruit_image/lemon.jpeg',
-    'fruit_image/orange.jpeg',
-    'fruit_image/pear.jpeg',
-    'fruit_image/watermelon.jpeg'
+        'fruit_image/apple.jpeg',
+        'fruit_image/grape.jpeg',
+        'fruit_image/lemon.jpeg',
+        'fruit_image/orange.jpeg',
+        'fruit_image/pear.jpeg',
+        'fruit_image/watermelon.jpeg'
     ]
 
-    # Corresponding item names
     item_names = ["Apple", "Grape", "Lemon", "Orange", "Pear", "Watermelon"]
-    expiration=[1,1,1,2,3,3]
+    expiration = [1, 1, 1, 2, 3, 3]
 
-    # Initialize session state for quantities if it doesn't exist
-    if 'quantities' not in st.session_state:
-        st.session_state.quantities = [0] * len(images)
+    # Initialize DataFrame in session state
+    if 'df' not in st.session_state:
+        try:
+            with open('database.pkl', 'rb') as f:
+                st.session_state.df = pickle.load(f)
+        except FileNotFoundError:
+            st.session_state.df = pd.DataFrame(columns=['Item', 'Quantity', 'Expiration', 'Category', 'Barcode'])
+            with open('database.pkl', 'wb') as f:
+                pickle.dump(st.session_state.df, f)
 
-
-    # Desired height for the images
-    desired_height = 200
-
-    # Create a 2x3 column layout
-    cols = st.columns(3)
-
-    for i in range(6):
-        with cols[i % 3]:
-            # Open the image using PIL
-            img = Image.open(images[i])
-            
-            # Resize the image
-            img_resized = img.resize((200, 200))
-
-            # Display the resized image
-            st.image(img_resized, use_column_width=True)
-            st.session_state.quantities[i] = st.number_input(
-                label='Quantity', 
-                key=f'quantity_{i}', 
-                min_value=0, 
-                value=st.session_state.quantities[i],
-                step=1
-            )
+    # Use a form to prevent immediate reruns
+    with st.form(key='fruit_form'):
+        # Display fruits and collect quantities
+        cols = st.columns(3)
+        quantities = []  # Local variable, not session state
         
-    with open('database.pkl','rb') as f:
-        df=pickle.load(f)
-
-    if st.button(label='Submit'):
-        st.write("You have selected:")
         for i in range(len(images)):
-            if st.session_state.quantities[i] > 0:
-                st.write(f"{item_names[i]}: {st.session_state.quantities[i]}")
-                data=[item_names[i],st.session_state.quantities[i],datetime.now()+timedelta(expiration[i]),'Fruits','']
-                new_row = pd.DataFrame([data], columns=['Item', 'Quantity', 'Expiration', 'Category', 'Barcode'])
-                df = pd.concat([df, new_row], ignore_index=True)
-        st.session_state.clear()
+            with cols[i % 3]:
+                img = Image.open(images[i])
+                img_resized = img.resize((200, 200))
+                st.image(img_resized, use_container_width=True)
+                
+                # NO 'key' parameter - widget won't persist its value
+                qty = st.number_input(
+                    label='Quantity',
+                    min_value=0,
+                    value=0,  # Always starts at 0
+                    step=1,
+                    key=f'qty_{i}_{st.session_state.get("form_submit_count", 0)}'  # Dynamic key
+                )
+                quantities.append(qty)
+        
+        # Submit button inside the form
+        submitted = st.form_submit_button(label='Submit')
+        
+        if submitted:
+            # Process the submission
+            items_added = False
+            for i in range(len(images)):
+                if quantities[i] > 0:
+                    items_added = True
+                    st.write(f"{item_names[i]}: {quantities[i]}")
+                    data = [item_names[i], quantities[i], 
+                           datetime.now() + timedelta(expiration[i]), 'Fruits', '']
+                    new_row = pd.DataFrame([data], columns=['Item', 'Quantity', 'Expiration', 'Category', 'Barcode'])
+                    st.session_state.df = pd.concat([st.session_state.df, new_row], ignore_index=True)
+            
+            if items_added:
+                # Save to file
+                with open('database.pkl', 'wb') as f:
+                    pickle.dump(st.session_state.df, f)
+                st.success('Items added successfully!')
+                
+                # Increment counter to create new widget keys next time
+                if 'form_submit_count' not in st.session_state:
+                    st.session_state.form_submit_count = 0
+                st.session_state.form_submit_count += 1
+                time.sleep(2)  # Small delay to show the success message
+                st.rerun()
+            else:
+                st.warning('No items selected!')
 
     st.divider()
 
+    # Undo button
     st.subheader('Remove last item added')
     if st.button(label='Undo'):
-        df = df.drop(df.index[-1])
+        if len(st.session_state.df) > 0:
+            st.session_state.df = st.session_state.df.drop(st.session_state.df.index[-1])
+            with open('database.pkl', 'wb') as f:
+                pickle.dump(st.session_state.df, f)
+            st.success('Last item removed!')
+
+            time.sleep(2)  
+            st.rerun()
+        else:
+            st.warning("No items to undo!")
 
     st.divider()
-    st.subheader('Last item Added')
-    st.dataframe(df)
-    with open('database.pkl','wb') as f:
-        pickle.dump(df,f)
-                    
-
+    
+    # Show last items
+    st.subheader('Last 5 Items Added')
+    if len(st.session_state.df) > 0:
+        st.dataframe(st.session_state.df.tail(5))
+    else:
+        st.info("No items in database yet")

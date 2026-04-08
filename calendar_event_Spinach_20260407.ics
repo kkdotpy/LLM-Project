@@ -1,0 +1,10 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:ics.py - http://git.io/lLljaA
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260409
+DESCRIPTION:2 units of Spinach will expire.\nCheck your fridge inventory!
+SUMMARY:Spinach expires today!
+UID:231cd897-5b2f-4fb5-b8e9-98123e69f799@231c.org
+END:VEVENT
+END:VCALENDAR

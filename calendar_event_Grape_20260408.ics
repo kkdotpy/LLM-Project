@@ -1,0 +1,10 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:ics.py - http://git.io/lLljaA
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260409
+DESCRIPTION:2 units of Grape will expire.\nCheck your fridge inventory!
+SUMMARY:Grape expires today!
+UID:011675d3-0692-49dd-ac75-925f4b4c167d@0116.org
+END:VEVENT
+END:VCALENDAR

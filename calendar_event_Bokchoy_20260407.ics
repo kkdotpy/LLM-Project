@@ -1,0 +1,10 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:ics.py - http://git.io/lLljaA
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260408
+DESCRIPTION:3 units of Bokchoy will expire.\nCheck your fridge inventory!
+SUMMARY:Bokchoy expires today!
+UID:f353ca18-e731-49aa-8d90-5f970d625715@f353.org
+END:VEVENT
+END:VCALENDAR

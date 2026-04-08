@@ -1,0 +1,10 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:ics.py - http://git.io/lLljaA
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260408
+DESCRIPTION:1 units of Pear will expire.\nCheck your fridge inventory!
+SUMMARY:Pear expires today!
+UID:0103b4db-78b5-4de0-8445-d5c1e93252e0@0103.org
+END:VEVENT
+END:VCALENDAR

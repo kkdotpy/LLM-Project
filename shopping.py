@@ -2,7 +2,7 @@ import pickle
 import re
 import pandas as pd
 from datetime import datetime
-from mistralai.client import Mistral
+from mistralai import Mistral
 import streamlit as st
 import ast  # For converting string representation of a list into a Python list
 import os
@@ -80,7 +80,7 @@ def shopping_page():
         return response.outputs[0].content
 
     # -----------------------------------------------------------------------------------------------------------------
-    # Ask Groq to return the missing items based on the recipe
+    # Ask Mistral to return the missing items based on the recipe
     def get_missing_items(recipe, fridge_items):
         client = Mistral(api_key=api_key)
 
@@ -147,17 +147,18 @@ def shopping_page():
         pref = st.text_input("Any special preferences?")
 
         submit_button = st.form_submit_button(label="Submit")
+        
         if submit_button:
             # Step 1: Check for expiring, low quantity, and other items
             expiring_items, low_quantity_items, fridge_items, alerts = check_items(df)
 
-            # Step 2: Generate a recipe using Groq
+            # Step 2: Generate a recipe using Mistral
             recipe = generate_recipe(expiring_items, fridge_items, pref)
 
             st.write("### Recipe Suggested:")
             st.write(recipe)
 
-            # Step 3: Ask Groq to return the missing items for the recipe
+            # Step 3: Ask Mistral to return the missing items for the recipe
             missing_items_list = get_missing_items(recipe, fridge_items)
 
             # Step 4: Filter out the items that are already in the fridge

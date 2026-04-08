@@ -1,0 +1,15 @@
+{
+  "preferences": {
+    "dietary_restrictions": [
+      "allergic to peanuts"
+    ],
+    "favorite_foods": [],
+    "cooking_skill_level": "intermediate",
+    "household_size": 1,
+    "goals": [
+      "lose weight"
+    ]
+  },
+  "interaction_history": [],
+  "user_context": {}
+}
