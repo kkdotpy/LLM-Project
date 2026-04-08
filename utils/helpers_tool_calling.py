@@ -93,6 +93,26 @@ TOOLS= [
             "required": ["preference_type", "value"]
         }
     }
+    },
+
+    {
+        "type": "function",
+        "function": {
+            "name": "web_search",
+            "description": "Search the web for current food safety information, recalls, outbreaks, or recent news. Use this when the user asks about time-sensitive information that might not be in the USDA database.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "The search query for food-related news (e.g., 'spinach recall 2025' or 'salmonella outbreak eggs')"
+                    }
+                },
+                "required": ["query"]
+            }
+        }
     }
+
+    
 ]
 

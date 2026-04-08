@@ -76,6 +76,9 @@ def vegetable_page():
     with open('database.pkl','wb') as f:
         pickle.dump(df,f)
 
-        
+# Back button
+if st.button("← Back"):
+    st.session_state.page = "home"
+    st.rerun()        
                     
 

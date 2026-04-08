@@ -149,24 +149,24 @@ def shopping_page():
         submit_button = st.form_submit_button(label="Submit")
         
         if submit_button:
-            # Step 1: Check for expiring, low quantity, and other items
+            # Checking for expiring, low quantity, and other items
             expiring_items, low_quantity_items, fridge_items, alerts = check_items(df)
 
-            # Step 2: Generate a recipe using Mistral
+            # Generating a recipe using Mistral
             recipe = generate_recipe(expiring_items, fridge_items, pref)
 
             st.write("### Recipe Suggested:")
             st.write(recipe)
 
-            # Step 3: Ask Mistral to return the missing items for the recipe
+            # Generating a list of missing items for the recipe
             missing_items_list = get_missing_items(recipe, fridge_items)
 
-            # Step 4: Filter out the items that are already in the fridge
+            # Filtering out the items that are already in the fridge
             filtered_missing_items = filter_missing_items(
                 missing_items_list, fridge_items
             )
 
-            # Step 5: Combine missing items with low-quantity items for the final shopping list
+            # Combining missing items with low-quantity items for the final shopping list
             shopping_list = create_final_shopping_list(
                 filtered_missing_items, low_quantity_items
             )

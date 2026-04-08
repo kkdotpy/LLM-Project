@@ -347,6 +347,17 @@ def execute_tool_call(tool_name, tool_args, user_memory=None):
             'calendar_links': results
         }
     
+    elif tool_name == "web_search":
+        query = tool_args.get("query")
+        if not query:
+            return {
+                "status": "error",
+                "message": "No search query provided."
+            }
+        
+        search_result = web_search(query)
+        return search_result
+    
     else:
         return {"status": "error", "message": f"Unknown tool: {tool_name}"}
 
@@ -387,14 +398,15 @@ def response(question, user_memory=None):
         **USDA FOODKEEPER GUIDELINES (for cooking & storage):**
         {foodkeeper_context if foodkeeper_context else "No USDA data retrieved."}
 
-        You have different tools to check expiring items, add to calendar, sync to Google Calendar, and update user memory. Use them when appropriate. Chain tools for multi‑step requests.
+        You have different tools to check expiring items, add to calendar, and update user memory, searcg the web for current food safety instruction. Use them when appropriate. Chain tools for multi‑step requests.
 
         HOW TO Respond (Follow these rules):
         1. **Think step by step.** Plan the actions you need into steps and decide what to do, which tools to call.
         2. **Use tools when relevant.** If the user asks about expiring items, call `check_expiring_items`. If they want reminders, call `add_to_calendar`. If they mention goals or preferences, call `update_user_memory`. Use `sync_to_google_calendar` to add multiple items at once.
         3. **Use memory proactively.** If the user has goals (e.g., “reduce food waste”) or dietary restrictions, always consider them when suggesting actions or recipes. When used cite USFISS dataset for information.
         4. When USDA FoodKeeper context is relevant and used, Cite those information in your response to user to seperate generic to actual data driven response.
-        5. **Be friendly and helpful.** Keep a warm, practical tone.
+        5. When you use web search results, cite the sources (URLs) in your response.
+        6. **Be friendly and helpful.** Keep a warm, practical tone.
 
         Now answer the user's question accordingly."""
 
@@ -462,11 +474,84 @@ def response(question, user_memory=None):
     
     return "Task completed after maximum rounds."
 
+#----------------------------------------------------------------------------------------------------------------
+### Web Searching: this is about getting current food safety information from the internet
+
+def web_search(query):
+    """Search the web for current food safety information using Tavily API
+       This is called when the agent needs real-time information about recalls,
+       outbreaks, or recent food safety news not available in the static USDA dataset.
+    """
+    import requests
+    
+    tavily_api_key = os.getenv("TAVILY_API_KEY")
+    
+    if not tavily_api_key:
+        return {
+            "status": "error",
+            "message": "Web search API key not configured."
+        }
+    
+    try:
+        response = requests.post(
+            "https://api.tavily.com/search",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {tavily_api_key}"
+            },
+            json={
+                "query": query,
+                "search_depth": "basic",  # basic--> For free plan (uses less credits)
+                "max_results": 3,
+                "include_answer": True, 
+                "include_raw_content": False
+            },
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Formatting the results in a clean way for the agent
+            results_text = f"Web search results for: {query}\n\n"
+            
+            if data.get("answer"):
+                results_text += f"Summary: {data['answer']}\n\n"
+            
+            ## to make it soruces backed 
+            results_text += "Sources:\n"
+            for i, result in enumerate(data.get("results", [])[:3], 1):
+                results_text += f"{i}. {result.get('title', 'No title')}\n"
+                results_text += f"   {result.get('url', 'No URL')}\n"
+                results_text += f"   {result.get('content', 'No content')[:300]}...\n\n"
+            
+            return {
+                "status": "success",
+                "query": query,
+                "results": results_text,
+                "message": f"Found information about {query}"
+            }
+        
+        else:
+            return {
+                "status": "error",
+                "message": f"Web search failed with status code: {response.status_code}"
+            }
+            
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Web search error: {str(e)}"
+        }
+    
+#--------------------------------------------------------------------------------------------------------------
+
+
 
 def chatbot_page():
     """Main chatbot UI"""
     
-     ## if memory not initialized, initialize it
+     ## Ensuring memory is initialized in session state
     if 'user_memory' not in st.session_state:
         st.session_state.user_memory = UserMemory()
 
@@ -564,7 +649,7 @@ def chatbot_page():
         st.divider()
         
         if st.button("📅 Download All Calendar Events"):
-            # Create combined calendar file
+            # Creating combined calendar file
             cal = Calendar()
             expiring_all = check_expiring_items_list(2)
             for item in expiring_all:

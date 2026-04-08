@@ -1,11 +1,10 @@
 import streamlit as st
+from manual import manual_page
 
 # Create a function to manage the navigation between pages
 def main_add():
     st.title("Add Items")
-    
-
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
         if st.button("Add Fruit"):
@@ -19,6 +18,9 @@ def main_add():
         if st.button("Barcode"):
             st.session_state.page = "Barcode"
 
+    with col4:
+        if st.button("Add Item"):
+            st.session_state.page = "AddItem"
 
     # Check the current page in session state and load that page
     if "page" not in st.session_state:
@@ -33,5 +35,7 @@ def main_add():
     elif st.session_state.page == "Barcode":
         from barcode import barcode_page
         barcode_page()
+    elif st.session_state.page == "AddItem":
+        manual_page()
 
 

@@ -1,11 +1,11 @@
 import streamlit as st
-
+from remove_manual import remove_manual_page
 # Create a function to manage the navigation between pages
 def main_remove():
     st.title("Remove Items")
     
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
         if st.button("Remove Fruit"):
@@ -18,6 +18,10 @@ def main_remove():
     with col3:
         if st.button("Barcode"):
             st.session_state.page = "Barcode"
+    
+    with col4:
+        if st.button("Manual Removal"):
+            st.session_state.page = "Manual"
 
 
     # Check the current page in session state and load that page
@@ -33,5 +37,6 @@ def main_remove():
     elif st.session_state.page == "Barcode":
         from remove_barcode import remove_barcode_page
         remove_barcode_page()
-
+    elif st.session_state.page == "Manual":
+        remove_manual_page()
 

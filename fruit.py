@@ -107,3 +107,8 @@ def fruit_page():
         st.dataframe(st.session_state.df.tail(5))
     else:
         st.info("No items in database yet")
+
+    # Back button
+    if st.button("← Back"):
+        st.session_state.page = "home"
+        st.rerun()
