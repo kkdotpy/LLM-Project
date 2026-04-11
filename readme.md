@@ -22,8 +22,15 @@ Additionally, the data collected is utilized to 3 applications:
   - A dashboard is available to provide insights into the fridge's contents, using charts and other visual representations.
 
 ### AI-Powered Features
-- **Chatbot:** 
-  - Ask the chatbot about what’s inside the fridge, expiration dates, or what to cook with the available ingredients.
+- **Chatbot: ChillBuddy**
+  - Ask the chatbot about what's inside the fridge, expiration dates, or what to cook with the available ingredients.
+  - Receive real-time alerts about items expiring soon with proactive suggestions to reduce food waste.
+  - Set personal preferences including dietary restrictions, favorite foods, cooking skill level, and household size.
+  - Add expiration reminders to Google Calendar or download .ics files for manual import.
+  - Get recipe suggestions based on expiring ingredients and user preferences.
+  - Store user memory across sessions to remember goals, dietary needs, and food preferences.
+  - Access USDA FoodKeeper guidelines for food storage and safety information.
+  - Search for current food safety alerts, recalls, or outbreak information.
   
 - **Smart Recipe Generator:**
   - Recommends recipes based on available ingredients.
