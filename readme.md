@@ -34,22 +34,30 @@ Additionally, the data collected is utilized to 3 applications:
 ### Prerequisites
 - Python 3.7 or later
 - Required libraries (you can install them via pip):
+
   ```bash
   pip install -r requirements.txt
 
 ## Setup
 - Clone the repository
 ```bash
-git clone https://github.com/christopher540/smart-fridge-hack4sdg-2024-final.git
+git clone https://github.com/kkdotpy/LLM-Project.git
 ```
+C:\Users\khare\Desktop\LLM_FINAL_PROJ\LLM-Project\vegetable_image
 - Navigate to the project directory:
+
 ```bash
-cd smart-fridge-hack4sdg-2024-final
+cd LLM-PROJECT
 ```
+
+
 - Make a .env file with the content
 ```bash
 API_KEY= 'Your API Key'
+TAVILY_API_KEY = 'Your Tavily API Key'
 ```
+
+
 - Run the main application:
 ```bash
 streamlit run main.py
