@@ -29,7 +29,7 @@ def manual_page():
                 new_row = pd.DataFrame([[
                     item_name.strip(),
                     quantity,
-                    expiration_date.strftime('%Y-%m-%d'),
+                    expiration_date,
                     category.strip() or "General",
                     "" 
                 ]], columns=['Item', 'Quantity', 'Expiration', 'Category', 'Barcode'])

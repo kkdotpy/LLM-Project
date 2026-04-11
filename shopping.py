@@ -1,5 +1,6 @@
 import pickle
 import re
+import json 
 import pandas as pd
 from datetime import datetime
 from mistralai import Mistral
@@ -22,47 +23,76 @@ def shopping_page():
         df = pickle.load(f)
 
     # --------------------------------------------------------------------------------------------------------------
-    # Checking expiring or low-quantity items
+    # Checking expiring items only
     # 'For now we set items expiring in two days for alerts'
     def check_items(df):
         expiring_items = []
-        low_quantity_items = []
         fridge_items = []
         alerts = []
 
         for index, rows in df.iterrows():
             # Check if the item is expiring within the next 2 days
-            if (rows["Expiration"] - datetime.now()).days <= 2:
+            if (pd.to_datetime(rows["Expiration"]) - datetime.now()).days <= 2:
                 expiring_items.append(rows["Item"])
                 alerts.append(
                     f"Expiring soon: {rows['Item']} (expires on {rows['Expiration']})"
                 )
 
-            elif rows["Quantity"] <= 1:  # Assuming 1 as the low quantity threshold
-                low_quantity_items.append(rows["Item"])
-                alerts.append(
-                    f"Low quantity: {rows['Item']} (only {rows['Quantity']} left)"
-                )
-
             # Add all fridge items (expiring or not) to the fridge_items list for later checking
             fridge_items.append(rows["Item"])
 
-        return expiring_items, low_quantity_items, fridge_items, alerts
+        return expiring_items, fridge_items, alerts
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Load user profile data
+    def load_user_profile():
+        user_memory_path = os.path.join(
+            os.path.dirname(__file__), "utils", "user_memory.json"
+        )
+        try:
+            with open(user_memory_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                preferences = data.get("preferences", {})
+                num_people = int(preferences.get("household_size", 1) or 1)
+                allergies = preferences.get("dietary_restrictions", [])
+                if isinstance(allergies, list):
+                    allergies = ", ".join(allergies)
+                dietary_prefs = preferences.get("dietary_preferences", [])
+                if isinstance(dietary_prefs, list):
+                    dietary_prefs = ", ".join(dietary_prefs)
+                return {
+                    "num_people": num_people,
+                    "allergies": allergies,
+                    "preferences": dietary_prefs,
+                }
+        except (FileNotFoundError, json.JSONDecodeError):
+            pass
+        return {"num_people": 1, "allergies": "", "preferences": ""}
 
     # -----------------------------------------------------------------------------------------------------------------
     # Generate a recipe based on items in the fridge
     def generate_recipe(expiring_items, fridge_items, preference):
         client = Mistral(api_key=api_key)
 
+        # Load user profile
+        user_profile = load_user_profile()
+        num_people = user_profile["num_people"]
+        allergies = user_profile["allergies"]
+        dietary_prefs = user_profile["preferences"]
+
         inputs = [
             {
                 "role": "user",
                 "content": f"""
-                                Can you suggest a recipe using the following items that are expiring soon and should be prioritized? 
-                                These are expiring soon: {expiring_items}.
-                                These are the other items in my fridge: {fridge_items}.
-                                My preference is: {preference}.
-                                """,
+                Can you suggest a recipe using the following items that are expiring soon and should be prioritized? 
+                These are expiring soon: {expiring_items}.
+                These are the other items in my fridge: {fridge_items}.
+                My household size is {num_people} people.
+                My allergies are: {allergies if allergies else "None"}.
+                My dietary preferences are: {dietary_prefs if dietary_prefs else "None"}.
+                My preference is: {preference}.
+                Also specify why this matches the requirements at the end
+                """,
             }
         ]
 
@@ -121,7 +151,6 @@ def shopping_page():
         except (SyntaxError, ValueError):
             return []
 
-
         return missing_items_list
 
     # --------------------------------------------------------------------------------------------------------
@@ -133,11 +162,9 @@ def shopping_page():
         return filtered_missing_items
 
     # --------------------------------------------------------------------------------------------------------
-    # Combine the missing items with low-quantity items from the fridge
-    def create_final_shopping_list(filtered_missing_items, low_quantity_items):
-        # Combine missing items from the recipe with low-quantity items from the fridge
-        shopping_list = filtered_missing_items + low_quantity_items
-        return shopping_list
+    # Create the final shopping list from missing recipe ingredients only
+    def create_final_shopping_list(filtered_missing_items):
+        return filtered_missing_items
 
     # --------------------------------------------------------------------------------------------------------
     # Streamlit application setup
@@ -147,29 +174,27 @@ def shopping_page():
         pref = st.text_input("Any special preferences?")
 
         submit_button = st.form_submit_button(label="Submit")
-        
-        if submit_button:
-            # Checking for expiring, low quantity, and other items
-            expiring_items, low_quantity_items, fridge_items, alerts = check_items(df)
 
-            # Generating a recipe using Mistral
+        if submit_button:
+            # Step 1: Check for expiring and other items
+            expiring_items, fridge_items, alerts = check_items(df)
+
+            # Step 2: Generate a recipe using Mistral
             recipe = generate_recipe(expiring_items, fridge_items, pref)
 
             st.write("### Recipe Suggested:")
             st.write(recipe)
 
-            # Generating a list of missing items for the recipe
+            # Step 3: Ask Mistral to return the missing items for the recipe
             missing_items_list = get_missing_items(recipe, fridge_items)
 
-            # Filtering out the items that are already in the fridge
+            # Step 4: Filter out the items that are already in the fridge
             filtered_missing_items = filter_missing_items(
                 missing_items_list, fridge_items
             )
 
-            # Combining missing items with low-quantity items for the final shopping list
-            shopping_list = create_final_shopping_list(
-                filtered_missing_items, low_quantity_items
-            )
+            # Step 5: Final shopping list only contains items not in the fridge
+            shopping_list = create_final_shopping_list(filtered_missing_items)
 
             st.write("### Shopping List:")
             if shopping_list:

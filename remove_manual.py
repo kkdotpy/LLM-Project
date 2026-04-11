@@ -54,7 +54,8 @@ def remove_manual_page():
         
         remove_method = st.radio(
             "Removal method:",
-            ["Remove oldest first (FIFO)", "Remove newest first (LIFO)", "Remove specific expiry date"]
+            ["Remove specific expiry date"]
+
         )
         
         specific_date = None
@@ -68,17 +69,9 @@ def remove_manual_page():
         if submitted:
             remaining_to_remove = quantity_to_remove
             
-            if remove_method == "Remove oldest first (FIFO)":
-                # Sort by expiration date (oldest first)
-                sorted_df = df[df['Item'] == item_name].sort_values('Expiration')
-                
-            elif remove_method == "Remove newest first (LIFO)":
-                # Sort by expiration date (newest first)
-                sorted_df = df[df['Item'] == item_name].sort_values('Expiration', ascending=False)
-                
-            else:  # Remove specific expiry date
-                sorted_df = df[(df['Item'] == item_name) & (df['Expiration'] == specific_date)]
-            
+            # Remove specific expiry date
+            sorted_df = df[(df['Item'] == item_name) & (df['Expiration'] == specific_date)]
+        
             indices_to_process = sorted_df.index.tolist()
             
             for idx in indices_to_process:

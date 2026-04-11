@@ -6,7 +6,7 @@ from Front import front_page
 from home_remove import main_remove
 from shopping import shopping_page
 
-PAGE_CONFIG = {"page_title":"Smart Fridge (Hack4SDG)", 
+PAGE_CONFIG = {"page_title":"Smart Fridge", 
                "layout":"centered", 
                "initial_sidebar_state":"auto"}
 

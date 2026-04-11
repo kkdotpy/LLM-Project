@@ -6,14 +6,13 @@ import streamlit as st
 from datetime import datetime
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'utils'))
 from ics import Calendar, Event
 from pathlib import Path
 from dotenv import load_dotenv
-from helpers_tool_calling import TOOLS
+from utils.helpers_tool_calling import TOOLS
 import json  
-from google_calendar import add_expiring_items_to_calendar, add_event_to_calendar
-from memory import UserMemory
+from utils.google_calendar import add_expiring_items_to_calendar, add_event_to_calendar
+from utils.memory import UserMemory
 
 
 ## For RAG
@@ -236,9 +235,18 @@ def execute_tool_call(tool_name, tool_args, user_memory=None):
             user_memory.add_goal(value)
         elif pref_type in ["dietary_restrictions", "favorite_foods"]:
             current = user_memory.memory["preferences"].get(pref_type, [])
-            if value not in current:
-                current.append(value)
+            if ',' in value:
+                individual_values = set([v.strip() for v in value.split(',')]) ## To prevent from being combined to one string during updates of memory
+                for v in individual_values:
+                    current.append(v)
+
+                current = list(set(current))  ## To prevent duplicates in case of multiple calls with overlapping values,
                 user_memory.save()
+            else:
+                if value not in current:
+                    current.append(value)
+                    current = list(set(current))  ## To prevent duplicates
+                    user_memory.save()
         else:
             if pref_type == 'household_size':
                 value = int(value) 
@@ -402,11 +410,12 @@ def response(question, user_memory=None):
 
         HOW TO Respond (Follow these rules):
         1. **Think step by step.** Plan the actions you need into steps and decide what to do, which tools to call.
-        2. **Use tools when relevant.** If the user asks about expiring items, call `check_expiring_items`. If they want reminders, call `add_to_calendar`. If they mention goals or preferences, call `update_user_memory`. Use `sync_to_google_calendar` to add multiple items at once.
-        3. **Use memory proactively.** If the user has goals (e.g., “reduce food waste”) or dietary restrictions, always consider them when suggesting actions or recipes. When used cite USFISS dataset for information.
-        4. When USDA FoodKeeper context is relevant and used, Cite those information in your response to user to seperate generic to actual data driven response.
-        5. When you use web search results, cite the sources (URLs) in your response.
-        6. **Be friendly and helpful.** Keep a warm, practical tone.
+        2. **Use tools when relevant.** If the user asks about expiring items, call `check_expiring_items`. If they want reminders, call `add_to_calendar`. If they mention goals or preferences, call `update_user_memory`.
+        3. **Use memory proactively.** If the user has goals (e.g., “reduce food waste”) or dietary restrictions, always consider them when suggesting any actions. When used cite USFISS dataset for information.
+        4. Remember you are not a recipe generator, but a practical assistant for food storage and waste reduction. Focus on providing actionable advice based on inventory and user preferences, not on cooking instructions.
+        5. When USDA FoodKeeper context is relevant and used, Cite those information in your response to user to seperate generic to actual data driven response.
+        6. When you use web search results, cite the sources (URLs) in your response and arrange it in a clear format.
+        7. **Be friendly and helpful.** Keep a warm, practical tone and concise.
 
         Now answer the user's question accordingly."""
 
@@ -418,7 +427,7 @@ def response(question, user_memory=None):
     }
     ]
      
-    print(f"DEBUG: Initial messages: {messages}")
+    # print(f"DEBUG: Initial messages: {messages}")
 
     # Allow multiple rounds of tool calls
     max_rounds = 10  # Prevent infinite loops
