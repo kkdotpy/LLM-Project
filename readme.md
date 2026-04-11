@@ -37,6 +37,8 @@ Additionally, the data collected is utilized to 3 applications:
 
   ```bash
   pip install -r requirements.txt
+  pip install -r requirements_clean.txt
+  # requirements_clean.txt is based on a env which was used for other projects as well so the dependencies might not all be necessary for this project to run.
 
 ## Setup
 - Clone the repository
